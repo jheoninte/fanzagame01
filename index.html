@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>配信者育成 MVP</title>
+<style>
+:root{
+  --bg:#16101f; --panel:rgba(255,255,255,.07); --panel2:rgba(255,255,255,.12);
+  --text:#f4eefc; --sub:#b9acd0; --pink:#ff5fa8; --violet:#8b6bff; --gold:#ffcb5c;
+  --green:#4fd69c; --red:#ff6b6b; --blue:#5fb4ff;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#3b2268 0,transparent 60%),var(--bg);
+  color:var(--text);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",system-ui,sans-serif;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+#app{max-width:1180px;margin:0 auto;padding:12px 16px 24px}
+header{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--panel);border-radius:14px}
+header .week{font-size:22px;font-weight:700}
+header .goal{flex:1;min-width:220px}
+.bar{height:10px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:6px;transition:width .3s}
+.bar.pink>i{background:linear-gradient(90deg,var(--pink),#ff9ac8)}
+.bar.green>i{background:var(--green)} .bar.blue>i{background:var(--blue)}
+.bar.gold>i{background:linear-gradient(90deg,#ffb347,var(--gold))} .bar.red>i{background:var(--red)}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;background:var(--panel2)}
+.btn{border:0;padding:8px 14px;border-radius:10px;background:var(--panel2)}
+.btn.primary{background:linear-gradient(90deg,var(--pink),var(--violet));font-weight:700}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+main{display:grid;grid-template-columns:300px 1fr 280px;gap:12px;margin-top:12px}
+@media(max-width:960px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border-radius:14px;padding:12px}
+.panel h3{margin:0 0 8px;font-size:13px;color:var(--sub);letter-spacing:.08em}
+.portrait{aspect-ratio:3/4;border-radius:12px;background:linear-gradient(160deg,#6b3fa0,#d65a9a);position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:#ffffffcc}
+.portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:13px}
+.row .k{width:56px;color:var(--sub)} .row .bar{flex:1} .row .v{width:36px;text-align:right}
+.hearts{letter-spacing:2px;color:var(--pink)}
+.tank{margin-top:10px;padding:10px;border-radius:12px;background:rgba(255,203,92,.1);border:1px solid rgba(255,203,92,.25)}
+.tank .t-name{font-weight:700;color:var(--gold)}
+.abil{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:13px}
+.abil .rk{width:26px;height:26px;border-radius:8px;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-weight:700}
+.abil .bar{flex:1}
+.cardslot{margin:6px 0;padding:8px;border-radius:10px;background:var(--panel2);font-size:12px}
+.cardslot b{display:block;font-size:13px}
+.center{display:flex;flex-direction:column;gap:12px}
+.stage{min-height:200px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:8px;color:var(--sub)}
+.log{font-size:13px;line-height:1.7;max-height:200px;overflow:auto}
+.cmdwrap{margin-top:12px}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tab{padding:6px 14px;border-radius:999px;border:0;background:var(--panel)}
+.tab.on{background:linear-gradient(90deg,var(--pink),var(--violet))}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.card{border:2px solid transparent;border-radius:12px;padding:10px;background:var(--panel);text-align:left;display:flex;flex-direction:column;gap:3px}
+.card:hover{background:var(--panel2)} .card.sel{border-color:var(--pink);background:rgba(255,95,168,.14)}
+.card .ic{font-size:22px} .card .nm{font-weight:700;font-size:14px}
+.card .sm{font-size:12px;color:var(--sub)} .card[disabled]{opacity:.4}
+.preview{margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:var(--panel)}
+.preview .grow{flex:1;min-width:240px;font-size:13px;line-height:1.7}
+.seg{display:flex;gap:4px}
+.seg button{border:0;padding:6px 10px;border-radius:8px;background:var(--panel2);font-size:13px}
+.seg button.on{background:var(--violet)}
+.up{color:var(--green)} .down{color:var(--red)}
+.modal{position:fixed;inset:0;background:rgba(10,6,20,.75);display:flex;align-items:center;justify-content:center;padding:16px;z-index:10}
+.modal .box{background:#241838;border:1px solid var(--panel2);border-radius:16px;max-width:560px;width:100%;padding:20px;max-height:90vh;overflow:auto}
+.modal h2{margin:0 0 8px;font-size:20px}
+.modal .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;position:sticky;bottom:-20px;padding:10px 0 4px;background:#241838}
+.slot{margin:10px 0;border:1px dashed var(--sub);border-radius:10px;padding:12px;font-size:12px;color:var(--sub);text-align:center;position:relative;overflow:hidden}
+.slot img,.slot video{max-width:100%;border-radius:8px;display:block;margin:0 auto}
+.deltas{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.badge-great{color:var(--gold);font-weight:700} .badge-fail{color:var(--red);font-weight:700}
+.chargrid{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:14px 0}
+.charcard{border:2px solid transparent;border-radius:12px;padding:12px 16px;min-width:140px;background:var(--panel);text-align:center}
+.charcard.sel{border-color:var(--pink);background:rgba(255,95,168,.14)}
+.charcard[disabled]{opacity:.5;cursor:not-allowed}
+.charcard .cname{font-weight:700}.charcard .csub{font-size:12px;color:var(--sub);margin-top:2px}
+.portrait video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.portrait.has,.slot.has{border:0}
+.cap{position:absolute;left:6px;bottom:6px;font-size:11px;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff}
+.slot.has{padding:0}
+.slot.ph img{opacity:.95}
+.arow{display:flex;gap:8px;align-items:baseline;font-size:12px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.arow .mk{width:16px;text-align:center}.arow .al{flex:1}.arow code{color:var(--sub);font-size:11px}
+.arow.ok .mk{color:var(--green)}.arow.ng .mk{color:var(--red)}.arow.ph .mk{color:var(--gold)}
+.modal.only-missing .arow.ok{display:none}
+code{background:rgba(255,255,255,.1);padding:1px 5px;border-radius:5px}
+.hide{display:none}
+.title{text-align:center;padding:40px 10px}
+.title h1{font-size:34px;margin:0 0 6px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script src="core.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
